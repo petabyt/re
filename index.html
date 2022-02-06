@@ -88,6 +88,7 @@ Source code: https://code.theres.life/p/arm-re
 		<button onclick="assemble()">Assemble</button>
 		<button onclick="execute()">Execute</button>
 		<button onclick="assemble(); execute()">Assemble + Execute</button>
+		<button onclick="prettify()">Format hex</button>
 		
 		<div id="input">Base address: <input type="text" onkeyup="baseAddr = this.value" value="0x10000"></div>
 	</div>
@@ -122,13 +123,11 @@ baseAddr = "0x10000";
 
 log_.value = "Stupid reverse engineering tool v1\n";
 log_.value += "Running Capstone ARM, Unicorn-arm\n";
-log_.value += "You can use python like hex() and chr() functions in the JS console."
+log_.value += "You can use python like hex() and chr() functions in the JS console.\n"
 
 function log(t) {
 	log_.value += t + "\n";
 }
-
-log("");
 
 function convertHex(text) {
 	ret = [];
@@ -140,6 +139,27 @@ function convertHex(text) {
 	}
 
 	return ret;
+}
+
+function prettify() {
+	var text = bytes.value;
+	bytes.value = "";
+
+	var code = convertHex(text);
+	for (var i = 0; i < code.length; i++) {
+		var hex = code[i].toString(16);
+		if (hex.length == 1) {
+			bytes.value += "0";
+		}
+		
+		bytes.value += hex;
+	
+		if (i != 0 && !((i + 1) % 4)) {
+			bytes.value += "\n";
+		} else {
+			bytes.value += " ";
+		}
+	}
 }
 
 function dis() {
@@ -163,8 +183,11 @@ function dis() {
 		return;
 	}
 
-	// Delete decoder
-	d.close();
+	try {
+		d.close();
+	} catch (e) {
+		return;
+	}
 }
 
 function assemble() {
@@ -184,6 +207,8 @@ function assemble() {
 	}
 
 	a.close();
+
+	prettify();
 }
 
 function execute() {
